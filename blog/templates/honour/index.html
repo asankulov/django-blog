@@ -9,11 +9,10 @@
         <article class="media content-section">
             <img class="rounded-circle article-img" src="{{ post.image.url }}">
             <div class="media-body">
-                <div class="article-metadata">
-                    {#              <a class="mr-2" href="{% url 'user_posts' post.author.username %}">{{ post.author }}</a>#}
-                    <small class="text-muted">{{ post.date_posted|date:"F d, Y" }}</small>
-                </div>
-                <h2><a class="article-title" href="{% url 'post_detail' post.pk %}">{{ post.title }}</a></h2>
+{#                <div class="article-metadata">#}
+{#                    <small class="text-muted">{{ post.title }}</small>#}
+{#                </div>#}
+                <h2><a class="article-title" href="{% url 'honour_detail' post.pk %}">{{ post.full_name }}</a></h2>
                 <p class="article-content">{{ post.content|safe }}</p>
             </div>
         </article>

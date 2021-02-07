@@ -1,33 +1,20 @@
 from django.db import models
 from django.utils import timezone
 from django.urls import reverse
-from django.conf import settings
 
-
-class PostManager(models.Manager):
-    def like_toggle(self, user, post_obj):
-        if user in post_obj.liked.all():
-            is_liked = False
-            post_obj.liked.remove(user)
-        else:
-            is_liked = True
-            post_obj.liked.add(user)
-        return is_liked
+from blog.helper import PathAndRename
 
 
 class Post(models.Model):
-    author = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
     content = models.TextField()
-    liked = models.ManyToManyField(
-        settings.AUTH_USER_MODEL, blank=True, related_name='liked')
-    date_posted = models.DateTimeField(default=timezone.now)
-
-    objects = PostManager()
+    date_posted = models.DateTimeField(default=timezone.now, editable=False)
+    image = models.ImageField(verbose_name='Картинка', upload_to=PathAndRename('post_images/'))
 
     class Meta:
-        ordering = ('-date_posted', )
+        ordering = ('-date_posted',)
+        verbose_name = 'Пост'
+        verbose_name_plural = 'Посты'
 
     def __str__(self):
         return self.title
@@ -36,21 +23,58 @@ class Post(models.Model):
         return reverse('post_detail', kwargs={'pk': self.pk})
 
 
-class Comment(models.Model):
-    post = models.ForeignKey(
-        Post, related_name='comments', on_delete=models.CASCADE)
-    author = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    text = models.TextField()
-    created_date = models.DateTimeField(default=timezone.now)
-    approved_comment = models.BooleanField(default=True)
+class CustomBaseModel(models.Model):
+    full_name = models.CharField(max_length=255, verbose_name='ФИО')
+    image = models.ImageField(verbose_name='Фото', upload_to=PathAndRename('avatars/'))
 
-    def approve(self):
-        self.approved_comment = True
-        self.save()
-
-    def get_absolute_url(self):
-        return reverse("post_list")
+    class Meta:
+        abstract = True
 
     def __str__(self):
-        return self.author
+        return self.full_name
+
+
+class CustomStaffBaseModel(CustomBaseModel):
+    title = models.CharField(verbose_name='Должность', max_length=255)
+
+    def __str__(self):
+        return f'{self.title} - {self.full_name}'
+
+    class Meta:
+        abstract = True
+
+
+class Administration(CustomStaffBaseModel):
+    class Meta:
+        verbose_name = 'Администрация'
+        verbose_name_plural = 'Администрация'
+
+    def get_absolute_url(self):
+        return reverse('administration_detail', kwargs={'pk': self.pk})
+
+
+class Teacher(CustomStaffBaseModel):
+    class Meta:
+        verbose_name = 'Педагогический состав'
+        verbose_name_plural = 'Педагогический состав'
+
+    def get_absolute_url(self):
+        return reverse('teacher_detail', kwargs={'pk': self.pk})
+
+
+class OurPride(CustomBaseModel):
+    class Meta:
+        verbose_name = 'Ими гордится школа'
+        verbose_name_plural = 'Ими гордится школа'
+
+    def get_absolute_url(self):
+        return reverse('our_pride_detail', kwargs={'pk': self.pk})
+
+
+class Honour(CustomBaseModel):
+    class Meta:
+        verbose_name = 'Отличники образования'
+        verbose_name_plural = 'Отличники образования'
+
+    def get_absolute_url(self):
+        return reverse('honour_detail', kwargs={'pk': self.pk})

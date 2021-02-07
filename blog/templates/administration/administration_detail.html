@@ -16,9 +16,9 @@
 
     <!-- Post information -->
     <div>
-        <h1 class="mt-4">{{object.title}}</h1>
+        <h1 class="mt-4">{{object.full_name}}</h1>
         <p>
-            Posted on {{ object.date_posted|date:"F d, Y" }}
+            {{ object.title }}
 {#            {% if object.author == user %}#}
 {#            <a class="btn btn-info btn-sm mt-1 mb-1 float-right" href="{% url 'post_update' object.id %}">Update</a>#}
 {#            <a class="btn btn-danger btn-sm mt-1 mb-1 float-right mr-2 "#}

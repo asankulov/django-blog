@@ -1,23 +1,23 @@
 from django.urls import path
-from . import views
-from .views import (
-    PostListView,
-    PostDetailView,
-    PostCreateView,
-    PostUpdateView,
-    PostDeleteView,
-    UserPostListView,
-    add_comment
-)
 
+from . import views
+from .views import *
 
 urlpatterns = [
     path('', PostListView.as_view(), name='index'),
-    path('user/<str:username>/', UserPostListView.as_view(), name='user_posts'),
     path('post/<int:pk>/', PostDetailView.as_view(), name='post_detail'),
-    path('post/new/', PostCreateView.as_view(), name='post_create'),
-    path('post/<int:pk>/update/', PostUpdateView.as_view(), name='post_update'),
-    path('post/<int:pk>/delete/', PostDeleteView.as_view(), name='post_delete'),
+
+    path('administration/', AdministrationListView.as_view(), name='administration_list'),
+    path('administration/<int:pk>/', AdministrationDetailView.as_view(), name='administration_detail'),
+
+    path('teacher/', TeacherListView.as_view(), name='teacher_list'),
+    path('teacher/<int:pk>/', TeacherDetailView.as_view(), name='teacher_detail'),
+
+    path('our_prides/', OurPrideListView.as_view(), name='our_pride_list'),
+    path('our_prides/<int:pk>/', OurPrideDetailView.as_view(), name='our_pride_detail'),
+
+    path('honour/', HonourListView.as_view(), name='honour_list'),
+    path('honour/<int:pk>/', HonourDetailView.as_view(), name='honour_detail'),
+
     path('about/', views.about, name='about'),
-    path('post/<int:pk>/comment/', add_comment, name='add_comment'),
 ]

@@ -1,18 +1,10 @@
-from .models import Post, Comment
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.models import User
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.db.models import Q
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from .forms import PostForm
+from django.shortcuts import render
 from django.views.generic import (
-    CreateView,
     ListView,
-    DetailView,
-    UpdateView,
-    DeleteView
+    DetailView
 )
+
+from .models import *
 
 
 class PostListView(ListView):
@@ -21,81 +13,51 @@ class PostListView(ListView):
     context_object_name = 'posts'
     paginate_by = 5
 
-    def get_queryset(self):
-        try:
-            keyword = self.request.GET['q']
-        except:
-            keyword = ''
-        if (keyword != ''):
-            object_list = self.model.objects.filter(
-                Q(content__icontains=keyword) | Q(title__icontains=keyword))
-        else:
-            object_list = self.model.objects.all()
-        return object_list
-
-
-class UserPostListView(ListView):
-    model = Post
-    template_name = 'blog/user_posts.html'
-    context_object_name = 'posts'
-    paginate_by = 5
-
-    def get_queryset(self):
-        user = get_object_or_404(User, username=self.kwargs.get('username'))
-        return Post.objects.filter(author=user).order_by('-date_posted')
-
 
 class PostDetailView(DetailView):
     model = Post
+    context_object_name = 'post'
 
 
-class PostCreateView(LoginRequiredMixin, CreateView):
-    model = Post
-    form_class = PostForm
-
-    def form_valid(self, form):
-        form.instance.author = self.request.user
-        return super().form_valid(form)
+class AdministrationListView(PostListView):
+    model = Administration
+    template_name = 'administration/index.html'
 
 
-class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    model = Post
-    fields = ['title', 'content']
-
-    def form_valid(self, form):
-        form.instance.author = self.request.user
-        return super().form_valid(form)
-
-    def test_func(self):
-        post = self.get_object()
-        if self.request.user == post.author:
-            return True
-        return False
+class AdministrationDetailView(PostDetailView):
+    model = Administration
+    template_name = 'administration/administration_detail.html'
 
 
-class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
-    model = Post
-    success_url = '/'
+class TeacherListView(PostListView):
+    model = Teacher
+    template_name = 'teacher/index.html'
 
-    def test_func(self):
-        post = self.get_object()
-        if self.request.user == post.author:
-            return True
-        return False
+
+class TeacherDetailView(PostDetailView):
+    model = Teacher
+    template_name = 'teacher/teacher_detail.html'
+
+
+class OurPrideListView(PostListView):
+    model = OurPride
+    template_name = 'our_pride/index.html'
+
+
+class OurPrideDetailView(PostDetailView):
+    model = OurPride
+    template_name = 'our_pride/our_pride_detail.html'
+
+
+class HonourListView(PostListView):
+    model = Honour
+    template_name = 'honour/index.html'
+
+
+class HonourDetailView(PostDetailView):
+    model = Honour
+    template_name = 'honour/honour_detail.html'
 
 
 def about(request):
     return render(request, 'blog/about.html', {'title': 'About'})
-
-
-@login_required
-def add_comment(request, pk):
-    post = get_object_or_404(Post, pk=pk)
-    if request.method == 'POST':
-        user = User.objects.get(id=request.POST.get('user_id'))
-        text = request.POST.get('text')
-        Comment(author=user, post=post, text=text).save()
-        messages.success(request, "Your comment has been added successfully.")
-    else:
-        return redirect('post_detail', pk=pk)
-    return redirect('post_detail', pk=pk)
